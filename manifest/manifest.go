@@ -72,15 +72,23 @@ func (jsonManifest manifest) getHost() (string, error) {
 }
 
 func (jsonManifest manifest) addRoutes(host string) error {
-	routes, err := jsonManifest.processDomain(host)
+	var routes Routes
+	if manifestRoutes, ok := jsonManifest["routes"]; ok {
+		if err := json.Unmarshal(manifestRoutes, &routes); err != nil {
+			return err
+		}
+	}
+	domainRoute, err := jsonManifest.processDomain(host)
 	if err != nil {
 		return err
 	}
-	additionalRoutes, err := jsonManifest.processDomains(host)
+	domainsRoutes, err := jsonManifest.processDomains(host)
 	if err != nil {
 		return err
 	}
-	routes = append(routes, additionalRoutes...)
+	routes = append(routes, domainRoute...)
+	routes = append(routes, domainsRoutes...)
+	routes = routes.removeDuplicates()
 	marshalledRoutes, err := json.Marshal(routes)
 	if err != nil {
 		return err
@@ -115,4 +123,16 @@ func (jsonManifest manifest) processDomains(host string) (Routes, error) {
 		}
 	}
 	return routes, nil
+}
+
+func (routes Routes) removeDuplicates() Routes {
+	routesMap := make(map[string]string)
+	for _, route := range routes {
+		routesMap[route.Route] = ""
+	}
+	var dedupedRoutes Routes
+	for route := range routesMap {
+		dedupedRoutes = append(dedupedRoutes, Route{Route: route})
+	}
+	return dedupedRoutes
 }
