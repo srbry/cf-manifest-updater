@@ -67,4 +67,10 @@ var _ = Describe("#Update", func() {
 			Ω(manifest.Update(oldManifest9)).Should(Equal(newManifest9))
 		})
 	})
+
+	Context("when using manifest 10", func() {
+		It("updates a cf manifest", func() {
+			Ω(manifest.Update(oldManifest10)).Should(Equal(newManifest10))
+		})
+	})
 })

@@ -65,20 +65,36 @@ func updateApplications(manifestApplications []byte, baseManifest manifest) ([]m
 		}
 		if _, ok := applicationObj["host"]; !ok {
 			if host != "" {
-				applicationObj["host"], _ = json.Marshal(host)
+				applicationObj["host"], err = json.Marshal(host)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
 		if _, ok := applicationObj["domain"]; !ok {
 			if domain != "" {
-				applicationObj["domain"], _ = json.Marshal(domain)
+				applicationObj["domain"], err = json.Marshal(domain)
+				if err != nil {
+					return nil, err
+				}
 			}
 		}
-		if _, ok := applicationObj["domains"]; !ok {
-			if len(domains) != 0 {
-				applicationObj["domains"], _ = json.Marshal(domains)
+		specificDomainsJSON, _ := applicationObj["domains"]
+		var specificDomains []string
+		if mashalErr := json.Unmarshal(specificDomainsJSON, &specificDomains); err != nil {
+			return nil, mashalErr
+		}
+		specificDomains = append(specificDomains, domains...)
+		if len(specificDomains) != 0 {
+			applicationObj["domains"], err = json.Marshal(specificDomains)
+			if err != nil {
+				return nil, err
 			}
 		}
-		marshalledApplication, _ := json.Marshal(applicationObj)
+		marshalledApplication, err := json.Marshal(applicationObj)
+		if err != nil {
+			return nil, err
+		}
 		applicationManifest, appErr := updateApplication(marshalledApplication)
 		if appErr != nil {
 			return nil, appErr

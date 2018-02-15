@@ -237,3 +237,38 @@ instances: 2
 memory: 30M
 name: example
 `
+
+var oldManifest10 = []byte(`name: example
+domains:
+  - example.com
+memory: 256M
+stack: cflinuxfs2
+timeout: 180
+applications:
+- name: example
+  env:
+    ENV1: value
+    ENV2: value
+  domains:
+    - example2.com
+  services:
+  - service1
+  command: bundle exec rake
+`)
+
+const newManifest10 = `applications:
+- command: bundle exec rake
+  env:
+    ENV1: value
+    ENV2: value
+  name: example
+  routes:
+  - route: example.example.com
+  - route: example.example2.com
+  services:
+  - service1
+memory: 256M
+name: example
+stack: cflinuxfs2
+timeout: 180
+`
