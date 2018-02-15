@@ -76,6 +76,11 @@ func (jsonManifest manifest) addRoutes(host string) error {
 	if err != nil {
 		return err
 	}
+	additionalRoutes, err := jsonManifest.processDomains(host)
+	if err != nil {
+		return err
+	}
+	routes = append(routes, additionalRoutes...)
 	marshalledRoutes, err := json.Marshal(routes)
 	if err != nil {
 		return err
@@ -93,6 +98,21 @@ func (jsonManifest manifest) processDomain(host string) (Routes, error) {
 		}
 		routes = append(routes, Route{Route: fmt.Sprintf("%s.%s", host, domain)})
 		delete(jsonManifest, "domain")
+	}
+	return routes, nil
+}
+
+func (jsonManifest manifest) processDomains(host string) (Routes, error) {
+	var routes Routes
+	if manifestDomain, ok := jsonManifest["domains"]; ok {
+		var domains []string
+		if err := json.Unmarshal(manifestDomain, &domains); err != nil {
+			return nil, err
+		}
+		delete(jsonManifest, "domains")
+		for _, domain := range domains {
+			routes = append(routes, Route{Route: fmt.Sprintf("%s.%s", host, domain)})
+		}
 	}
 	return routes, nil
 }
