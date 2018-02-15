@@ -73,4 +73,11 @@ var _ = Describe("#Update", func() {
 			Ω(manifest.Update(oldManifest10)).Should(Equal(newManifest10))
 		})
 	})
+
+	Context("when using manifest 11", func() {
+		It("return an error", func() {
+			_, err := manifest.Update(oldManifest11)
+			Ω(err).Should(MatchError("Domains are set without 'host' or 'name', cannot generate routes"))
+		})
+	})
 })

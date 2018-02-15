@@ -272,3 +272,17 @@ name: example
 stack: cflinuxfs2
 timeout: 180
 `
+
+var oldManifest11 = []byte(`domains:
+  - example.com
+memory: 256M
+stack: cflinuxfs2
+timeout: 180
+applications:
+- env:
+    ENV1: value
+    ENV2: value
+  services:
+  - service1
+  command: bundle exec rake
+`)

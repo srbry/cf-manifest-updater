@@ -45,15 +45,15 @@ func updateApplications(manifestApplications []byte, baseManifest manifest) ([]m
 	if manifestErr := json.Unmarshal(manifestApplications, &applicationsJSON); manifestErr != nil {
 		return nil, manifestErr
 	}
-	host, err := baseManifest.getHost()
+	host, err := baseManifest.getHost(false)
 	if err != nil {
 		return nil, err
 	}
-	domain, err := baseManifest.getDomain()
+	domain, err := baseManifest.getDomain(false)
 	if err != nil {
 		return nil, err
 	}
-	domains, err := baseManifest.getDomains()
+	domains, err := baseManifest.getDomains(false)
 	if err != nil {
 		return nil, err
 	}
@@ -91,6 +91,9 @@ func updateApplications(manifestApplications []byte, baseManifest manifest) ([]m
 				return nil, err
 			}
 		}
+		if manifestErr := applicationObj.validateManifest(); manifestErr != nil {
+			return nil, manifestErr
+		}
 		marshalledApplication, err := json.Marshal(applicationObj)
 		if err != nil {
 			return nil, err
@@ -109,7 +112,10 @@ func updateApplication(oldManifest []byte) (manifest, error) {
 	if err != nil {
 		return nil, err
 	}
-	host, err := jsonManifest.getHost()
+	if manifestErr := jsonManifest.validateManifest(); manifestErr != nil {
+		return nil, manifestErr
+	}
+	host, err := jsonManifest.getHost(false)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +123,27 @@ func updateApplication(oldManifest []byte) (manifest, error) {
 		return nil, manifestErr
 	}
 	return jsonManifest, nil
+}
+
+func (jsonManifest manifest) validateManifest() error {
+	host, err := jsonManifest.getHost(true)
+	if err != nil {
+		return err
+	}
+	domain, err := jsonManifest.getDomain(true)
+	if err != nil {
+		return err
+	}
+	domains, err := jsonManifest.getDomains(true)
+	if err != nil {
+		return err
+	}
+	if host == "" {
+		if domain != "" || len(domains) > 0 {
+			return fmt.Errorf("Domains are set without 'host' or 'name', cannot generate routes")
+		}
+	}
+	return nil
 }
 
 func loadJSONManifest(oldManifest []byte) (manifest, error) {
@@ -143,7 +170,7 @@ func marshal(jsonManifest interface{}) (string, error) {
 	return string(newManifestBytes), nil
 }
 
-func (jsonManifest manifest) getHost() (string, error) {
+func (jsonManifest manifest) getHost(keep bool) (string, error) {
 	var host string
 	if manifestName, ok := jsonManifest["name"]; ok {
 		if err := json.Unmarshal(manifestName, &host); err != nil {
@@ -154,7 +181,9 @@ func (jsonManifest manifest) getHost() (string, error) {
 		if err := json.Unmarshal(manifestHost, &host); err != nil {
 			return "", err
 		}
-		delete(jsonManifest, "host")
+		if !keep {
+			delete(jsonManifest, "host")
+		}
 	}
 	return host, nil
 }
@@ -215,24 +244,28 @@ func (jsonManifest manifest) processDomains(host string) (Routes, error) {
 	return routes, nil
 }
 
-func (jsonManifest manifest) getDomain() (string, error) {
+func (jsonManifest manifest) getDomain(keep bool) (string, error) {
 	var domain string
 	if manifestDomain, ok := jsonManifest["domain"]; ok {
 		if err := json.Unmarshal(manifestDomain, &domain); err != nil {
 			return "", err
 		}
-		delete(jsonManifest, "domain")
+		if !keep {
+			delete(jsonManifest, "domain")
+		}
 	}
 	return domain, nil
 }
 
-func (jsonManifest manifest) getDomains() ([]string, error) {
+func (jsonManifest manifest) getDomains(keep bool) ([]string, error) {
 	var domains []string
 	if manifestDomain, ok := jsonManifest["domains"]; ok {
 		if err := json.Unmarshal(manifestDomain, &domains); err != nil {
 			return nil, err
 		}
-		delete(jsonManifest, "domains")
+		if !keep {
+			delete(jsonManifest, "domains")
+		}
 	}
 	return domains, nil
 }
