@@ -18,20 +18,51 @@ type Route struct {
 	Route string `json:"route,omitempty"`
 }
 
+type applications struct {
+	Applications []manifest `json:"applications,omitempty"`
+}
+
 // Update - updates deperecated elements of a CF manifest
 func Update(oldManifest string) (string, error) {
 	jsonManifest, err := loadJSONManifest(oldManifest)
 	if err != nil {
 		return "", err
 	}
-	host, err := jsonManifest.getHost()
+	if manifestApplications, ok := jsonManifest["applications"]; ok {
+		var applicationsJSON []json.RawMessage
+		if manifestErr := json.Unmarshal(manifestApplications, &applicationsJSON); manifestErr != nil {
+			return "", manifestErr
+		}
+		var newApplications applications
+		for _, application := range applicationsJSON {
+			applicationManifest, appErr := updateApplication(string(application))
+			if appErr != nil {
+				return "", appErr
+			}
+			newApplications.Applications = append(newApplications.Applications, applicationManifest)
+		}
+		return marshal(newApplications)
+	}
+	newManifest, err := updateApplication(oldManifest)
 	if err != nil {
 		return "", err
 	}
-	if manifestErr := jsonManifest.addRoutes(host); manifestErr != nil {
-		return "", manifestErr
+	return marshal(newManifest)
+}
+
+func updateApplication(oldManifest string) (manifest, error) {
+	jsonManifest, err := loadJSONManifest(oldManifest)
+	if err != nil {
+		return nil, err
 	}
-	return jsonManifest.marshal()
+	host, err := jsonManifest.getHost()
+	if err != nil {
+		return nil, err
+	}
+	if manifestErr := jsonManifest.addRoutes(host); manifestErr != nil {
+		return nil, manifestErr
+	}
+	return jsonManifest, nil
 }
 
 func loadJSONManifest(oldManifest string) (manifest, error) {
@@ -46,7 +77,7 @@ func loadJSONManifest(oldManifest string) (manifest, error) {
 	return jsonManifest, nil
 }
 
-func (jsonManifest manifest) marshal() (string, error) {
+func marshal(jsonManifest interface{}) (string, error) {
 	newJSONManifestBytes, err := json.Marshal(jsonManifest)
 	if err != nil {
 		return "", err

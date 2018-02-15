@@ -15,5 +15,7 @@ var _ = Describe("#Update", func() {
 		Ω(manifest.Update(oldManifest3)).Should(Equal(newManifest3))
 		Ω(manifest.Update(oldManifest4)).Should(Equal(newManifest4))
 		Ω(manifest.Update(oldManifest5)).Should(Equal(newManifest5))
+		Ω(manifest.Update(oldManifest6)).Should(Equal(newManifest6))
+		Ω(manifest.Update(oldManifest7)).Should(Equal(newManifest7))
 	})
 })
