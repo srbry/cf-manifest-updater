@@ -29,17 +29,9 @@ func Update(oldManifest string) (string, error) {
 		return "", err
 	}
 	if manifestApplications, ok := jsonManifest["applications"]; ok {
-		var applicationsJSON []json.RawMessage
-		if manifestErr := json.Unmarshal(manifestApplications, &applicationsJSON); manifestErr != nil {
+		newApplications, manifestErr := updateApplications(manifestApplications)
+		if manifestErr != nil {
 			return "", manifestErr
-		}
-		var newApplications applications
-		for _, application := range applicationsJSON {
-			applicationManifest, appErr := updateApplication(string(application))
-			if appErr != nil {
-				return "", appErr
-			}
-			newApplications.Applications = append(newApplications.Applications, applicationManifest)
 		}
 		return marshal(newApplications)
 	}
@@ -48,6 +40,22 @@ func Update(oldManifest string) (string, error) {
 		return "", err
 	}
 	return marshal(newManifest)
+}
+
+func updateApplications(manifestApplications []byte) (applications, error) {
+	var applicationsJSON []json.RawMessage
+	if manifestErr := json.Unmarshal(manifestApplications, &applicationsJSON); manifestErr != nil {
+		return applications{}, manifestErr
+	}
+	var newApplications applications
+	for _, application := range applicationsJSON {
+		applicationManifest, appErr := updateApplication(string(application))
+		if appErr != nil {
+			return applications{}, appErr
+		}
+		newApplications.Applications = append(newApplications.Applications, applicationManifest)
+	}
+	return newApplications, nil
 }
 
 func updateApplication(oldManifest string) (manifest, error) {
