@@ -66,6 +66,7 @@ func (jsonManifest manifest) getHost() (string, error) {
 		if err := json.Unmarshal(manifestHost, &host); err != nil {
 			return "", err
 		}
+		delete(jsonManifest, "host")
 	}
 	return host, nil
 }
