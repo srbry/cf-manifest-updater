@@ -14,7 +14,9 @@ func main() {
 	app.Name = "cf-manifest-updater"
 	app.Usage = "updates golang manifests"
 	app.Action = updateManifest
-	app.Run(os.Args)
+	if err := app.Run(os.Args); err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func updateManifest(c *cli.Context) error {
