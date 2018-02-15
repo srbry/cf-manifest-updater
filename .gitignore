@@ -1,1 +1,3 @@
 *.coverprofile
+cf-manifest-updater
+coverage.txt
