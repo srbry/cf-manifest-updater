@@ -6,6 +6,8 @@
 
 `cf-manifest-updater` is a simple CLI tool for upgrading your CF manifest to help with deprecations as described [here](https://docs.cloudfoundry.org/devguide/deploy-apps/manifest.html#route-attribute).
 
+As other features of manifests get altered this tool will aim to provide easy migration paths where possible.
+
 ## Install
 
 `go get github.com/srbry/cf-manifest-updater`
