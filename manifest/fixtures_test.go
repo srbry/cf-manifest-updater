@@ -194,3 +194,46 @@ const newManifest7 = `applications:
   - route: test.example1.com
   - route: test.example2.com
 `
+
+var oldManifest8 = []byte(`name: example
+domain: example.com
+memory: 256M
+stack: cflinuxfs2
+timeout: 180
+applications:
+- name: example
+  env:
+    ENV1: value
+    ENV2: value
+  services:
+  - service1
+  command: bundle exec rake
+`)
+
+const newManifest8 = `applications:
+- command: bundle exec rake
+  env:
+    ENV1: value
+    ENV2: value
+  name: example
+  routes:
+  - route: example.example.com
+  services:
+  - service1
+memory: 256M
+name: example
+stack: cflinuxfs2
+timeout: 180
+`
+
+var oldManifest9 = []byte(`name: example
+instances: 2
+memory: 30M
+disk_quota: 50M
+`)
+
+const newManifest9 = `disk_quota: 50M
+instances: 2
+memory: 30M
+name: example
+`

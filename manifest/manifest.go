@@ -18,42 +18,72 @@ type Route struct {
 	Route string `json:"route,omitempty"`
 }
 
-type applications struct {
-	Applications []manifest `json:"applications,omitempty"`
-}
-
 // Update - updates deperecated elements of a CF manifest
 func Update(oldManifest []byte) (string, error) {
 	jsonManifest, err := loadJSONManifest(oldManifest)
 	if err != nil {
 		return "", err
 	}
-	if manifestApplications, ok := jsonManifest["applications"]; ok {
-		newApplications, manifestErr := updateApplications(manifestApplications)
-		if manifestErr != nil {
-			return "", manifestErr
-		}
-		return marshal(newApplications)
-	}
 	newManifest, err := updateApplication(oldManifest)
 	if err != nil {
 		return "", err
 	}
+	if manifestApplications, ok := jsonManifest["applications"]; ok {
+		newApplications, manifestErr := updateApplications(manifestApplications, jsonManifest)
+		if manifestErr != nil {
+			return "", manifestErr
+		}
+		newManifest["applications"], _ = json.Marshal(newApplications)
+		delete(newManifest, "routes")
+		return marshal(newManifest)
+	}
 	return marshal(newManifest)
 }
 
-func updateApplications(manifestApplications []byte) (applications, error) {
+func updateApplications(manifestApplications []byte, baseManifest manifest) ([]manifest, error) {
 	var applicationsJSON []json.RawMessage
 	if manifestErr := json.Unmarshal(manifestApplications, &applicationsJSON); manifestErr != nil {
-		return applications{}, manifestErr
+		return nil, manifestErr
 	}
-	var newApplications applications
+	host, err := baseManifest.getHost()
+	if err != nil {
+		return nil, err
+	}
+	domain, err := baseManifest.getDomain()
+	if err != nil {
+		return nil, err
+	}
+	domains, err := baseManifest.getDomains()
+	if err != nil {
+		return nil, err
+	}
+	var newApplications []manifest
 	for _, application := range applicationsJSON {
-		applicationManifest, appErr := updateApplication(application)
-		if appErr != nil {
-			return applications{}, appErr
+		applicationObj, err := loadJSONManifest(application)
+		if err != nil {
+			return nil, err
 		}
-		newApplications.Applications = append(newApplications.Applications, applicationManifest)
+		if _, ok := applicationObj["host"]; !ok {
+			if host != "" {
+				applicationObj["host"], _ = json.Marshal(host)
+			}
+		}
+		if _, ok := applicationObj["domain"]; !ok {
+			if domain != "" {
+				applicationObj["domain"], _ = json.Marshal(domain)
+			}
+		}
+		if _, ok := applicationObj["domains"]; !ok {
+			if len(domains) != 0 {
+				applicationObj["domains"], _ = json.Marshal(domains)
+			}
+		}
+		marshalledApplication, _ := json.Marshal(applicationObj)
+		applicationManifest, appErr := updateApplication(marshalledApplication)
+		if appErr != nil {
+			return nil, appErr
+		}
+		newApplications = append(newApplications, applicationManifest)
 	}
 	return newApplications, nil
 }
@@ -99,8 +129,10 @@ func marshal(jsonManifest interface{}) (string, error) {
 
 func (jsonManifest manifest) getHost() (string, error) {
 	var host string
-	if err := json.Unmarshal(jsonManifest["name"], &host); err != nil {
-		return "", err
+	if manifestName, ok := jsonManifest["name"]; ok {
+		if err := json.Unmarshal(manifestName, &host); err != nil {
+			return "", err
+		}
 	}
 	if manifestHost, ok := jsonManifest["host"]; ok {
 		if err := json.Unmarshal(manifestHost, &host); err != nil {
@@ -129,11 +161,13 @@ func (jsonManifest manifest) addRoutes(host string) error {
 	routes = append(routes, domainRoute...)
 	routes = append(routes, domainsRoutes...)
 	routes = routes.removeDuplicates()
-	marshalledRoutes, err := json.Marshal(routes)
-	if err != nil {
-		return err
+	if len(routes) != 0 {
+		marshalledRoutes, err := json.Marshal(routes)
+		if err != nil {
+			return err
+		}
+		jsonManifest["routes"] = marshalledRoutes
 	}
-	jsonManifest["routes"] = marshalledRoutes
 	return nil
 }
 
@@ -163,6 +197,28 @@ func (jsonManifest manifest) processDomains(host string) (Routes, error) {
 		}
 	}
 	return routes, nil
+}
+
+func (jsonManifest manifest) getDomain() (string, error) {
+	var domain string
+	if manifestDomain, ok := jsonManifest["domain"]; ok {
+		if err := json.Unmarshal(manifestDomain, &domain); err != nil {
+			return "", err
+		}
+		delete(jsonManifest, "domain")
+	}
+	return domain, nil
+}
+
+func (jsonManifest manifest) getDomains() ([]string, error) {
+	var domains []string
+	if manifestDomain, ok := jsonManifest["domains"]; ok {
+		if err := json.Unmarshal(manifestDomain, &domains); err != nil {
+			return nil, err
+		}
+		delete(jsonManifest, "domains")
+	}
+	return domains, nil
 }
 
 func (routes Routes) removeDuplicates() Routes {
