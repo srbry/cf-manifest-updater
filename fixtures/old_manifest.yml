@@ -1,0 +1,16 @@
+applications:
+- name: example
+  host: test
+  instances: 2
+  memory: 30M
+  disk_quota: 50M
+  domains:
+  - example1.com
+  - example2.com
+- name: example
+  instances: 2
+  memory: 30M
+  disk_quota: 50M
+  domains:
+  - example1.com
+  - example2.com
