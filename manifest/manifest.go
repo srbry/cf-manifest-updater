@@ -23,7 +23,7 @@ type applications struct {
 }
 
 // Update - updates deperecated elements of a CF manifest
-func Update(oldManifest string) (string, error) {
+func Update(oldManifest []byte) (string, error) {
 	jsonManifest, err := loadJSONManifest(oldManifest)
 	if err != nil {
 		return "", err
@@ -49,7 +49,7 @@ func updateApplications(manifestApplications []byte) (applications, error) {
 	}
 	var newApplications applications
 	for _, application := range applicationsJSON {
-		applicationManifest, appErr := updateApplication(string(application))
+		applicationManifest, appErr := updateApplication(application)
 		if appErr != nil {
 			return applications{}, appErr
 		}
@@ -58,7 +58,7 @@ func updateApplications(manifestApplications []byte) (applications, error) {
 	return newApplications, nil
 }
 
-func updateApplication(oldManifest string) (manifest, error) {
+func updateApplication(oldManifest []byte) (manifest, error) {
 	jsonManifest, err := loadJSONManifest(oldManifest)
 	if err != nil {
 		return nil, err
@@ -73,8 +73,8 @@ func updateApplication(oldManifest string) (manifest, error) {
 	return jsonManifest, nil
 }
 
-func loadJSONManifest(oldManifest string) (manifest, error) {
-	jsonManifestBytes, err := yaml.YAMLToJSON([]byte(oldManifest))
+func loadJSONManifest(oldManifest []byte) (manifest, error) {
+	jsonManifestBytes, err := yaml.YAMLToJSON(oldManifest)
 	if err != nil {
 		return nil, err
 	}

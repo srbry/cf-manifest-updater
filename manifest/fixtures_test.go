@@ -1,11 +1,11 @@
 package manifest_test
 
-const oldManifest = `name: example
+var oldManifest = []byte(`name: example
 instances: 2
 memory: 30M
 disk_quota: 50M
 domain: example.com
-`
+`)
 
 const newManifest = `disk_quota: 50M
 instances: 2
@@ -15,13 +15,13 @@ routes:
 - route: example.example.com
 `
 
-const oldManifest1 = `name: example
+var oldManifest1 = []byte(`name: example
 host: test
 instances: 2
 memory: 30M
 disk_quota: 50M
 domain: example.com
-`
+`)
 
 const newManifest1 = `disk_quota: 50M
 instances: 2
@@ -31,7 +31,7 @@ routes:
 - route: test.example.com
 `
 
-const oldManifest2 = `name: example
+var oldManifest2 = []byte(`name: example
 host: test
 instances: 2
 memory: 30M
@@ -39,7 +39,7 @@ disk_quota: 50M
 domains:
 - example1.com
 - example2.com
-`
+`)
 
 const newManifest2 = `disk_quota: 50M
 instances: 2
@@ -50,7 +50,7 @@ routes:
 - route: test.example2.com
 `
 
-const oldManifest3 = `name: example
+var oldManifest3 = []byte(`name: example
 host: test
 instances: 2
 memory: 30M
@@ -59,7 +59,7 @@ domain: example.com
 domains:
 - example1.com
 - example2.com
-`
+`)
 
 const newManifest3 = `disk_quota: 50M
 instances: 2
@@ -71,7 +71,7 @@ routes:
 - route: test.example2.com
 `
 
-const oldManifest4 = `name: example
+var oldManifest4 = []byte(`name: example
 host: test
 instances: 2
 memory: 30M
@@ -80,7 +80,7 @@ domain: example1.com
 domains:
 - example1.com
 - example2.com
-`
+`)
 
 const newManifest4 = `disk_quota: 50M
 instances: 2
@@ -91,7 +91,7 @@ routes:
 - route: test.example2.com
 `
 
-const oldManifest5 = `name: example
+var oldManifest5 = []byte(`name: example
 host: test
 instances: 2
 memory: 30M
@@ -105,7 +105,7 @@ routes:
 services:
 - service1
 - service2
-`
+`)
 
 const newManifest5 = `disk_quota: 50M
 instances: 2
@@ -120,7 +120,7 @@ services:
 - service2
 `
 
-const oldManifest6 = `applications:
+var oldManifest6 = []byte(`applications:
 - name: example
   instances: 2
   memory: 30M
@@ -131,7 +131,7 @@ const oldManifest6 = `applications:
   memory: 30M
   disk_quota: 50M
   domain: example.com
-`
+`)
 
 const newManifest6 = `applications:
 - disk_quota: 50M
@@ -148,7 +148,7 @@ const newManifest6 = `applications:
   - route: example2.example.com
 `
 
-const oldManifest7 = `applications:
+var oldManifest7 = []byte(`applications:
 - name: example
   host: test
   instances: 2
@@ -172,7 +172,7 @@ const oldManifest7 = `applications:
   domains:
   - example1.com
   - example2.com
-`
+`)
 
 const newManifest7 = `applications:
 - disk_quota: 50M

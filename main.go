@@ -22,12 +22,13 @@ func updateManifest(c *cli.Context) error {
 	if manifestFile == "" {
 		return fmt.Errorf("must provide a source manifest file")
 	}
+
 	oldManifest, err := ioutil.ReadFile(manifestFile)
 	if err != nil {
 		return err
 	}
 
-	newManifest, err := manifest.Update(string(oldManifest))
+	newManifest, err := manifest.Update(oldManifest)
 	if err != nil {
 		return err
 	}
