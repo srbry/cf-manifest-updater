@@ -3,6 +3,7 @@ package manifest
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/ghodss/yaml"
 )
@@ -134,5 +135,8 @@ func (routes Routes) removeDuplicates() Routes {
 	for route := range routesMap {
 		dedupedRoutes = append(dedupedRoutes, Route{Route: route})
 	}
+	sort.Slice(dedupedRoutes, func(i int, j int) bool {
+		return dedupedRoutes[i].Route < dedupedRoutes[j].Route
+	})
 	return dedupedRoutes
 }

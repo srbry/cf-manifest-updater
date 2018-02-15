@@ -102,6 +102,9 @@ domains:
 routes:
 - route: tcp.example.com:8000
 - route: test.example1.com
+services:
+- service1
+- service2
 `
 
 const newManifest5 = `disk_quota: 50M
@@ -109,7 +112,10 @@ instances: 2
 memory: 30M
 name: example
 routes:
+- route: tcp.example.com:8000
 - route: test.example1.com
 - route: test.example2.com
-- route: tcp.example.com:8000
+services:
+- service1
+- service2
 `
